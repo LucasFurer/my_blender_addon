@@ -1,0 +1,4 @@
+numpy
+scipy
+pip
+"blender-python-stubs>=5.1,<5.2"
