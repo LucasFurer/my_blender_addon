@@ -9,10 +9,6 @@ def generate_grid(
     grid_points_x: int,
     grid_points_y: int,
 ) -> None:
-
-    width_x = grid_points_x - 1
-    width_y = grid_points_y - 1
-
     verts: list[bmesh.types.BMVert] = []
 
     for y in range(grid_points_y):
@@ -68,6 +64,7 @@ def apply_heightmap_noise(
             current_scale *= 2
             current_height *= 0.5
 
+    # make sure all the z values are above 0.0
     for v in bm.verts:
         v.co.z += noise_height
 
@@ -151,11 +148,13 @@ def take_sediment(
     y_l = int(d_pos_y)
     discrete_radius = int(p_radius)
 
+    # search this neighborhood
     search_min_x = x_l - discrete_radius
     search_min_y = y_l - discrete_radius
     search_max_x = x_l + 1 + discrete_radius
     search_max_y = y_l + 1 + discrete_radius
 
+    # this can be more efficient, two nested for loops can probably be one
     norm = 0
     for search_x in range(search_min_x, search_max_x + 1):
         if search_x >= 0 and search_x < grid_points_x:
@@ -287,13 +286,6 @@ def erosion_simulation(
             d_dir_new_x /= d_dir_new_len
             d_dir_new_y /= d_dir_new_len
 
-            # for debug check the len of d_dir_new
-            d_dir_new_len = math.sqrt(
-                d_dir_new_x * d_dir_new_x + d_dir_new_y * d_dir_new_y
-            )
-            if d_dir_new_len > 1.01 or d_dir_new_len < 0.99:
-                print("new direction len is wrong")
-
             # calculate new position
             d_pos_new_x = d_pos_old_x + d_dir_new_x
             d_pos_new_y = d_pos_old_y + d_dir_new_y
@@ -313,7 +305,7 @@ def erosion_simulation(
             ) - get_height_interpolate(bm, d_pos_old_x, d_pos_old_y, grid_points_x)
 
             if h_dif > 0.0:
-                # drop climbed uphill — fill the pit it came from, don't erode
+                # drop climbed uphill. fill the pit it came from, don't erode
                 sediment_to_deposit = min(d_sediment, h_dif)
                 d_sediment -= sediment_to_deposit
                 give_sediment(
