@@ -68,6 +68,9 @@ def apply_heightmap_noise(
             current_scale *= 2
             current_height *= 0.5
 
+    for v in bm.verts:
+        v.co.z += noise_height
+
 
 # ------------------------------------------------------------------------
 # ------------------------------------------------------------------------
@@ -191,6 +194,7 @@ def erosion_simulation(
     debug_bmeshes: list[bmesh.types.BMesh],
 ) -> None:
     bm.verts.ensure_lookup_table()
+    print("starting erosion")
 
     # helper variables
     grid_len_x = grid_points_x - 1
@@ -204,17 +208,17 @@ def erosion_simulation(
     # how willing the vel is to change [0-1]
     p_inertia = 0.3
     # the capacity of a water droplet [0-x]
-    p_capacity = 8  # 16
+    p_capacity = 4  # 16
     # this is used to erode flatter terrain too
     p_minslope = 0.01  # 0.01
     # gravity makes the points faster [0-x]
     p_gravity = 10  # 10
     # how much water evaporates each step [0-1]
-    p_evaporation = 0.02  # 0.025
+    p_evaporation = 0.05  # 0.025
     # take sediment from points within this distance [math.sqrt(0.5)-x]
-    p_radius = 3.0
+    p_radius = 4.0
     # what fraction of the remaining capacity a drop can take from the map [0-1]
-    p_erosion = 0.3  # 0.1
+    p_erosion = 0.01  # 0.1
     # what fraction of the surplus sediment a drop can place on the map [0-1]
     p_deposition = 0.1  # 0.1
 
@@ -283,6 +287,13 @@ def erosion_simulation(
             d_dir_new_x /= d_dir_new_len
             d_dir_new_y /= d_dir_new_len
 
+            # for debug check the len of d_dir_new
+            d_dir_new_len = math.sqrt(
+                d_dir_new_x * d_dir_new_x + d_dir_new_y * d_dir_new_y
+            )
+            if d_dir_new_len > 1.01 or d_dir_new_len < 0.99:
+                print("new direction len is wrong")
+
             # calculate new position
             d_pos_new_x = d_pos_old_x + d_dir_new_x
             d_pos_new_y = d_pos_old_y + d_dir_new_y
@@ -301,12 +312,9 @@ def erosion_simulation(
                 bm, d_pos_new_x, d_pos_new_y, grid_points_x
             ) - get_height_interpolate(bm, d_pos_old_x, d_pos_old_y, grid_points_x)
 
-            # calculate the capacity of this droplet
-            d_cap = max(-h_dif, p_minslope) * d_vel * d_water * p_capacity
-
-            # if drop has more sediment than capacity, drop a percentage (p_deposition) at p_old
-            if d_sediment > d_cap:
-                sediment_to_deposit = (d_sediment - d_cap) * p_deposition
+            if h_dif > 0.0:
+                # drop climbed uphill — fill the pit it came from, don't erode
+                sediment_to_deposit = min(d_sediment, h_dif)
                 d_sediment -= sediment_to_deposit
                 give_sediment(
                     bm,
@@ -315,21 +323,36 @@ def erosion_simulation(
                     d_pos_old_x,
                     d_pos_old_y,
                 )
-            # if drop has less sediment than capacity, take a percentage of remaining capacity (p_erosion) of p_old.
             else:
-                sediment_to_take = min((d_cap - d_sediment) * p_erosion, -h_dif)
-                d_sediment += sediment_to_take
-                take_sediment(
-                    bm,
-                    grid_points_x,
-                    grid_points_y,
-                    p_radius,
-                    sediment_to_take,
-                    d_pos_old_x,
-                    d_pos_old_y,
-                )
+                # calculate the capacity of this droplet
+                d_cap = max(-h_dif, p_minslope) * d_vel * d_water * p_capacity
 
-            # adjust vel - the max is sus since it should never be negative!!!!!!!!
+                # if drop has more sediment than capacity, drop a percentage (p_deposition) at p_old
+                if d_sediment > d_cap:
+                    sediment_to_deposit = (d_sediment - d_cap) * p_deposition
+                    d_sediment -= sediment_to_deposit
+                    give_sediment(
+                        bm,
+                        grid_points_x,
+                        sediment_to_deposit,
+                        d_pos_old_x,
+                        d_pos_old_y,
+                    )
+                # if drop has less sediment than capacity, take a percentage of remaining capacity (p_erosion) of p_old.
+                else:
+                    sediment_to_take = min((d_cap - d_sediment) * p_erosion, -h_dif)
+                    d_sediment += sediment_to_take
+                    take_sediment(
+                        bm,
+                        grid_points_x,
+                        grid_points_y,
+                        p_radius,
+                        sediment_to_take,
+                        d_pos_old_x,
+                        d_pos_old_y,
+                    )
+
+            # adjust vel
             d_vel = math.sqrt(max(0.0, d_vel * d_vel - h_dif * p_gravity))
 
             # evaporate water

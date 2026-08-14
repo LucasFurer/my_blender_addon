@@ -113,7 +113,7 @@ class TerrainProps(bpy.types.PropertyGroup):
         name="Noise Scale", default=0.01, min=0.0, update=_on_prop_update
     )
     noise_height: bpy.props.FloatProperty(
-        name="Noise Height", default=40.0, min=0.0, update=_on_prop_update
+        name="Noise Height", default=30.0, min=0.0, update=_on_prop_update
     )
     layer_amount: bpy.props.IntProperty(
         name="layer_amount", default=4, min=1, update=_on_prop_update
