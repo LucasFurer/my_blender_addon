@@ -1,2 +1,4 @@
 my_blender_addon_env/
 __pycache__/
+build/
+extension_repo/

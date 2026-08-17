@@ -3,10 +3,11 @@ import inspect
 
 from .terrain import *
 
+
 bl_info = {
-    "name": "my blender addons",
+    "name": "terrain_erosion_addon",
     "author": "lucas",
-    "description": "bunch of random functionality",
+    "description": "creates terrain using erosion",
     "blender": (5, 1, 2),
     "version": (0, 0, 1),
     "location": "View3D",
@@ -28,7 +29,7 @@ def register():
             bpy.utils.register_class(c)
         except AttributeError as e:
             print(
-                f"Encountered an error while loading your {c.__name__} module, maybe you're missing some boilerplate?\n"
+                f"Encountered an error while loading your {c.__name__} module.\n"
                 f"\tError: '{e}'\n"
                 f"\t(Take a look in '{inspect.getfile(c)}' to find out what's missing)"
             )

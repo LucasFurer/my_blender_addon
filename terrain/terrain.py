@@ -336,7 +336,7 @@ def erosion_simulation(
                         d_pos_old_x,
                         d_pos_old_y,
                     )
-                # if drop has less sediment than capacity, take a percentage of remaining capacity (p_erosion) of p_old.
+                # if drop has less sediment than capacity, take a percentage of remaining capacity (p_erosion) of p_old
                 else:
                     sediment_to_take = min((d_cap - d_sediment) * p_erosion, -h_dif)
                     d_sediment += sediment_to_take

@@ -1,9 +1,6 @@
 #### how to run:
 ```bash
-edit Makefile to point the BLENDER variable to the blender executable
-
-make repo
-make dev
+blender --python run.py
 ```
 
 ![Terrain without erosion](images/terrain_original.png)
