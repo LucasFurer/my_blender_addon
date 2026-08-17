@@ -2,7 +2,8 @@
 ```bash
 edit Makefile to point the BLENDER variable to the blender executable
 
-make repo
+make repo // do this only once
+
 make dev
 ```
 
