@@ -64,10 +64,6 @@ def apply_heightmap_noise(
             current_scale *= 2
             current_height *= 0.5
 
-    # make sure all the z values are above 0.0
-    for v in bm.verts:
-        v.co.z += noise_height
-
 
 # ------------------------------------------------------------------------
 # ------------------------------------------------------------------------
@@ -191,6 +187,16 @@ def erosion_simulation(
     grid_points_x: int,
     grid_points_y: int,
     debug_bmeshes: list[bmesh.types.BMesh],
+    iteration_amount: int,
+    p_maxpath: int,
+    p_inertia: float,
+    p_capacity: float,
+    p_minslope: float,
+    p_gravity: float,
+    p_evaporation: float,
+    p_radius: float,
+    p_erosion: float,
+    p_deposition: float,
 ) -> None:
     bm.verts.ensure_lookup_table()
     print("starting erosion")
@@ -201,25 +207,25 @@ def erosion_simulation(
 
     # simulation parameters
     # how many droplets to simulate [1000-x]
-    iteration_amount = 50000
+    # iteration_amount = 10000
     # how many steps each droplet takes [40-x]
-    p_maxpath = 30
+    # p_maxpath = 30
     # how willing the vel is to change [0-1]
-    p_inertia = 0.3
+    # p_inertia = 0.3
     # the capacity of a water droplet [0-x]
-    p_capacity = 4  # 16
+    # p_capacity = 4  # 16
     # this is used to erode flatter terrain too
-    p_minslope = 0.01  # 0.01
+    # p_minslope = 0.01  # 0.01
     # gravity makes the points faster [0-x]
-    p_gravity = 10  # 10
+    # p_gravity = 10  # 10
     # how much water evaporates each step [0-1]
-    p_evaporation = 0.05  # 0.025
+    # p_evaporation = 0.05  # 0.025
     # take sediment from points within this distance [math.sqrt(0.5)-x]
-    p_radius = 4.0
+    # p_radius = 4.0
     # what fraction of the remaining capacity a drop can take from the map [0-1]
-    p_erosion = 0.01  # 0.1
+    # p_erosion = 0.01  # 0.1
     # what fraction of the surplus sediment a drop can place on the map [0-1]
-    p_deposition = 0.1  # 0.1
+    # p_deposition = 0.1  # 0.1
 
     # repeat for every droplet
     for iter in range(iteration_amount):

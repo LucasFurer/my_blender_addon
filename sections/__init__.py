@@ -16,7 +16,8 @@ bl_info = {
 
 classes = [
     TerrainProps,
-    TerrainGenerate,
+    TerrainGenerateNoise,
+    TerrainGenerateErosion,
     TerrainPanel,
 ]
 
